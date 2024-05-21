@@ -15,8 +15,9 @@ void handle_sigusr2(int sig) {
 }
 
 int main() {
+	int	z = 100;
     // Set up the SIGUSR1 handler
-	while () {
+	while (z--) {
 	if (signal(SIGUSR1, handle_sigusr1) == SIG_ERR) {
         perror("Cannot handle SIGUSR1");
         exit(EXIT_FAILURE);
@@ -27,7 +28,7 @@ int main() {
         perror("Cannot handle SIGUSR2");
         exit(EXIT_FAILURE);
     }
-
+	}
     printf("Server is running with PID: %d\n", getpid());
 
     // Loop indefinitely to keep the server running

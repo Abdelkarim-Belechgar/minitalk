@@ -1,25 +1,19 @@
-//#include "minitalk.h"
 #include <unistd.h>
+
 void	ft_putchar(char c) {
 	write(1, &c, 1);
 }
 
 void	ft_putstr(char *str) {
-	if (!str) {
-		write(1, "(null)\n", 7);
-	}
-	else {
-		while (*str) {
-			ft_putchar(*str);
-			str++;
-		}
+	while (*str) {
+		ft_putchar(*str);
+		str++;
 	}
 }
 
-int	ft_atoi(char *str) {
-	int	result;
-	int	sign;
-
+unsigned int	ft_atoi(char *str) {
+	unsigned int	result;
+	unsigned int	sign;
 
 	sign = 1;
 	result = 0;
@@ -51,39 +45,90 @@ unsigned int	ft_strlen(char *str) {
 	return (len);
 }
 
-#include <stdlib.h>
-char*	convert_string_byts(char c) {
-	char	*str;
-	int		byte;
-	int		z;
+void	initialisation_string(char *str) {
+	unsigned int	z;
 
-	str = malloc(9);
 	z = 0;
 	while (8 > z) {
 		str[z] = 48;
 		z++;
 	}
 	str[z] = 0;
+}
+
+unsigned int	convert_binary_to_decimal(char *str) {
+	unsigned int	result;
+	unsigned int	byte;
+
+	byte = 128;
+	result = 0;
+	while (*str) {
+		if (*str == 49) {
+			result += byte;
+		}
+		byte /= 2;
+		str++;
+	}
+	return (result);
+}
+
+void	convert_decimal_to_binary(char *str, unsigned char c) {
+	unsigned int		byte;
+	unsigned int		z;
+
 	z = 8;
 	byte = 128;
+	initialisation_string(str);
 	while (z--) {
 		if (c >= byte) {
 			*str = '1';
 			c -= byte;
 		}
-		str++;
 		byte /= 2;
+		str++;
 	}
-	return (str - 8);
 }
 
+unsigned int	handling_args(int argc, char **argv) {
+	unsigned int	pid;
+	
+	if (argc == 3) {
+		if ((pid = ft_atoi(argv[1])) < 2 ) {
+			ft_putstr("pid error\n");
+			exit (1);
+		}
+		if (!*argv[2]) {
+			ft_putstr("empty message\n");
+			exit(1);
+		}
+	}
+	else {
+		ft_putstr("error number of arguments\n");
+		exit(1);
+	}
+	return (pid);
+}
+
+char	*strjoin();
 #include <stdio.h>
-int	main(void) {
-	char *emoji = "a😀z";
-	char	*str = convert_string_byts('a');
-	ft_putstr(str);
-	ft_putchar('\n');
-	ft_putstr(emoji);
-	ft_putchar('\n');
-	printf("%u\n", ft_strlen(emoji));
+#include <stdlib.h>
+int	main(int argc, char **argv) {
+	pid_t			pid;
+	unsigned int	res;
+	char			*binary;
+
+	pid = hanling_pid(argc, argv);
+	binary = (char *)malloc(sizeof(char) * 9);
+	if (!binary) {
+		return (1);
+	}
+	while (*argv[1]) {
+		convert_decimal_to_binary(binary, *argv[1]);
+		printf("str '%c' new = %s\n", *argv[1], binary);
+		res = convert_binary_to_decimal(binary);
+		printf("res = %u\n", res);
+		argv[1]++;
+	}
+	free(binary);
+	return (0);
 }
