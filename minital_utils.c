@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void	ft_putchar(char c) {
 	write(1, &c, 1);
@@ -9,6 +11,14 @@ void	ft_putstr(char *str) {
 		ft_putchar(*str);
 		str++;
 	}
+}
+
+void	ft_putnbr(int nbr) {
+	if (nbr > 9) {
+		ft_putnbr(nbr / 10);
+	}
+	nbr %= 10;
+	ft_putchar(nbr + 48);
 }
 
 unsigned int	ft_atoi(char *str) {
@@ -89,9 +99,13 @@ void	convert_decimal_to_binary(char *str, unsigned char c) {
 	}
 }
 
-unsigned int	handling_args(int argc, char **argv) {
-	unsigned int	pid;
+void	send_one_byte(unsigned int c) {
 	
+}
+
+pid_t	get_pid(int argc, char **argv) {
+	pid_t	pid;
+
 	if (argc == 3) {
 		if ((pid = ft_atoi(argv[1])) < 2 ) {
 			ft_putstr("pid error\n");
@@ -101,6 +115,10 @@ unsigned int	handling_args(int argc, char **argv) {
 			ft_putstr("empty message\n");
 			exit(1);
 		}
+		ft_putstr("\"sender\"\t==> Client PID = ");
+		ft_putnbr(getpid());
+		ft_putstr("\n\"receiver\"\t==> Server PID = ");
+		ft_putnbr(pid);
 	}
 	else {
 		ft_putstr("error number of arguments\n");
@@ -109,26 +127,39 @@ unsigned int	handling_args(int argc, char **argv) {
 	return (pid);
 }
 
-char	*strjoin();
-#include <stdio.h>
-#include <stdlib.h>
-int	main(int argc, char **argv) {
-	pid_t			pid;
-	unsigned int	res;
-	char			*binary;
+void	send_len_of_message(pid_t pid, unsigned int len) {
+	unsigned int	z;
+	unsigned char	c;
+	char		*ptr;
 
-	pid = hanling_pid(argc, argv);
-	binary = (char *)malloc(sizeof(char) * 9);
-	if (!binary) {
-		return (1);
+	z = 4;
+	ptr = &c;
+	while (z--) {
+		c = *ptr;
+
+		ptr++;
 	}
-	while (*argv[1]) {
-		convert_decimal_to_binary(binary, *argv[1]);
-		printf("str '%c' new = %s\n", *argv[1], binary);
-		res = convert_binary_to_decimal(binary);
-		printf("res = %u\n", res);
-		argv[1]++;
-	}
-	free(binary);
+}
+
+int	main(int argc, char **argv) {
+	pid_t		pid;
+	unsigned int	len;
+
+	pid = get_pid(argc, argv);
+	len = ft_strlen(argv[2]);
+	send_len_of_message(len, pid);
 	return (0);
 }
+//	char		*binary;
+//	binary = (char *)malloc(sizeof(char) * 9);
+//	if (!binary) {
+//		return (1);
+//	}
+//	while (*argv[1]) {
+//		convert_decimal_to_binary(binary, *argv[1]);
+//		printf("str '%c' new = %s\n", *argv[1], binary);
+//		res = convert_binary_to_decimal(binary);
+//		printf("res = %u\n", res);
+//		argv[1]++;
+//	}
+//	free(binary);
