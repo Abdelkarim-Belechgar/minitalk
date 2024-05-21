@@ -82,15 +82,18 @@ unsigned int	convert_binary_to_decimal(char *str) {
 	return (result);
 }
 
-void	convert_decimal_to_binary(char *str, unsigned char c) {
-	unsigned int		byte;
-	unsigned int		z;
+unsigned int	convert_decimal_to_binary(char *str, unsigned char c) {
+	unsigned int	byte;
+	unsigned int	res;
+	unsigned int	z;
 
 	z = 8;
+	res = 0;
 	byte = 128;
 	initialisation_string(str);
 	while (z--) {
 		if (c >= byte) {
+			res++;
 			*str = '1';
 			c -= byte;
 		}
@@ -99,8 +102,34 @@ void	convert_decimal_to_binary(char *str, unsigned char c) {
 	}
 }
 
-void	send_one_byte(unsigned int c) {
-	
+void	send_one_byte(pid_t pid, unsigned int c) {
+	unsigned int	byte;
+	unsigned int	z;
+
+	z = 8;
+	byte = 128;
+	while (z--) {
+		if (c >= byte && kill(pid, SIGUSR1) != -1) {
+			c -= byte;
+		}
+		else {
+			kill(pid, SIGUSR2);
+		}
+		byte /= 2;
+	}
+
+void	send_len_of_message(pid_t pid, unsigned int len) {
+	unsigned int	z;
+	unsigned char	c;
+	char		*ptr;
+
+	z = 4;
+	ptr = &pid;
+	while (z--) {
+		c = *ptr;
+		send_one_byte(pid, c);
+		ptr++;
+	}
 }
 
 pid_t	get_pid(int argc, char **argv) {
@@ -125,20 +154,6 @@ pid_t	get_pid(int argc, char **argv) {
 		exit(1);
 	}
 	return (pid);
-}
-
-void	send_len_of_message(pid_t pid, unsigned int len) {
-	unsigned int	z;
-	unsigned char	c;
-	char		*ptr;
-
-	z = 4;
-	ptr = &c;
-	while (z--) {
-		c = *ptr;
-
-		ptr++;
-	}
 }
 
 int	main(int argc, char **argv) {
