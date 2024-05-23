@@ -113,15 +113,14 @@ char	*strjoin();
 #include <stdio.h>
 #include <stdlib.h>
 int	main(int argc, char **argv) {
+	ft_putstr("世界您好");
+	printf("\n%d\n", ft_strlen("世界您好"));
+	/*
 	pid_t			pid;
 	unsigned int	res;
 	char			*binary;
 
-	pid = hanling_pid(argc, argv);
-	binary = (char *)malloc(sizeof(char) * 9);
-	if (!binary) {
-		return (1);
-	}
+	pid = hanling_args(argc, argv);
 	while (*argv[1]) {
 		convert_decimal_to_binary(binary, *argv[1]);
 		printf("str '%c' new = %s\n", *argv[1], binary);
@@ -130,5 +129,6 @@ int	main(int argc, char **argv) {
 		argv[1]++;
 	}
 	free(binary);
+	*/
 	return (0);
 }
