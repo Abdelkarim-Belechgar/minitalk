@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void	ft_putchar(char c) {
 	write(1, &c, 1);
@@ -9,6 +11,14 @@ void	ft_putstr(char *str) {
 		ft_putchar(*str);
 		str++;
 	}
+}
+
+void	ft_putnbr(int nbr) {
+	if (nbr > 9) {
+		ft_putnbr(nbr / 10);
+	}
+	nbr %= 10;
+	ft_putchar(nbr + 48);
 }
 
 unsigned int	ft_atoi(char *str) {
@@ -72,15 +82,18 @@ unsigned int	convert_binary_to_decimal(char *str) {
 	return (result);
 }
 
-void	convert_decimal_to_binary(char *str, unsigned char c) {
-	unsigned int		byte;
-	unsigned int		z;
+unsigned int	convert_decimal_to_binary(char *str, unsigned char c) {
+	unsigned int	byte;
+	unsigned int	res;
+	unsigned int	z;
 
 	z = 8;
+	res = 0;
 	byte = 128;
 	initialisation_string(str);
 	while (z--) {
 		if (c >= byte) {
+			res++;
 			*str = '1';
 			c -= byte;
 		}
@@ -89,9 +102,39 @@ void	convert_decimal_to_binary(char *str, unsigned char c) {
 	}
 }
 
-unsigned int	handling_args(int argc, char **argv) {
-	unsigned int	pid;
-	
+void	send_one_byte(pid_t pid, unsigned int c) {
+	unsigned int	byte;
+	unsigned int	z;
+
+	z = 8;
+	byte = 128;
+	while (z--) {
+		if (c >= byte && kill(pid, SIGUSR1) != -1) {
+			c -= byte;
+		}
+		else {
+			kill(pid, SIGUSR2);
+		}
+		byte /= 2;
+	}
+
+void	send_len_of_message(pid_t pid, unsigned int len) {
+	unsigned int	z;
+	unsigned char	c;
+	char		*ptr;
+
+	z = 4;
+	ptr = &pid;
+	while (z--) {
+		c = *ptr;
+		send_one_byte(pid, c);
+		ptr++;
+	}
+}
+
+pid_t	get_pid(int argc, char **argv) {
+	pid_t	pid;
+
 	if (argc == 3) {
 		if ((pid = ft_atoi(argv[1])) < 2 ) {
 			ft_putstr("pid error\n");
@@ -101,6 +144,10 @@ unsigned int	handling_args(int argc, char **argv) {
 			ft_putstr("empty message\n");
 			exit(1);
 		}
+		ft_putstr("\"sender\"\t==> Client PID = ");
+		ft_putnbr(getpid());
+		ft_putstr("\n\"receiver\"\t==> Server PID = ");
+		ft_putnbr(pid);
 	}
 	else {
 		ft_putstr("error number of arguments\n");
@@ -109,10 +156,8 @@ unsigned int	handling_args(int argc, char **argv) {
 	return (pid);
 }
 
-char	*strjoin();
-#include <stdio.h>
-#include <stdlib.h>
 int	main(int argc, char **argv) {
+<<<<<<< HEAD
 	ft_putstr("世界您好");
 	printf("\n%d\n", ft_strlen("世界您好"));
 	/*
@@ -130,5 +175,26 @@ int	main(int argc, char **argv) {
 	}
 	free(binary);
 	*/
+=======
+	pid_t		pid;
+	unsigned int	len;
+
+	pid = get_pid(argc, argv);
+	len = ft_strlen(argv[2]);
+	send_len_of_message(len, pid);
+>>>>>>> 82e495c82c5938205bf8629516cb76eabd8c3741
 	return (0);
 }
+//	char		*binary;
+//	binary = (char *)malloc(sizeof(char) * 9);
+//	if (!binary) {
+//		return (1);
+//	}
+//	while (*argv[1]) {
+//		convert_decimal_to_binary(binary, *argv[1]);
+//		printf("str '%c' new = %s\n", *argv[1], binary);
+//		res = convert_binary_to_decimal(binary);
+//		printf("res = %u\n", res);
+//		argv[1]++;
+//	}
+//	free(binary);
