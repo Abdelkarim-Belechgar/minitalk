@@ -1,5 +1,4 @@
 #include "minitalk.h"
-#include <stdio.h>
 
 static i_signal	server;
 // SIGUSR2	= 2;
@@ -25,30 +24,15 @@ unsigned int	convert_decimal_to_binary(char *str, unsigned char c) {
 		str++;
 	}
 }
-
-unsigned int	send_one_bit(bool bit) {
-	
-}
-
-
-void	send_one_byte(char *c) {
-	int	
-}
-
-void	init_signal_pid(i_signal *node) {
-	node->si_pid = 1;
-	node->len = 1;
-	node->message = NULL;
-}
 */
-void	handler_signal(int signum, siginfo_t *info, void *context) {
-//	signum -= SIGUSR1; //if (signum) --> means SIGUSR2 else if (!signum) ---> means SIGUSR1
-	(void)info;
-	(void)context;
-	if ((server.flag == 1 && signum == SIGUSR1) || (server.flag == 2 && signum == SIGUSR2)) {
-		server.flag = 0;
-	}
+
+void	init_signal_pid(void) {
+	server.pid = 0;
+	server.len = 0;
+	server.flag = 0;
+	server.message = NULL;
 }
+
 /*
 void	send_message(struct sigaction sa) {
 	while (*server.message) {
@@ -57,96 +41,107 @@ void	send_message(struct sigaction sa) {
 	}
 }
 */
+/*
+unsigned int	send_one_bit(bool bit) {	
+}
+
+void	send_one_byte(unsigned char *c) {
+
+}
+*/
 void	send_len_of_message() {
 	unsigned int	len;
 	unsigned int	bit;
 
 	len = 32;
 	bit = 2147483648;
-	printf("lennn = %d\n", server.len);
 	while (len--) {
 		if (server.len >= bit) {
-			if (kill(server.si_pid, SIGUSR1) == -1) {
-				server.flag = 0;
-				ft_putstr("error: failed requist send SIGUSR1", 1);
-			}
-			else {
-				//ft_putstr("confirm requist SIGUSR1", 1);
-				ft_putchar('1');
-				server.flag = 1;
-				server.len -= bit;
-			}
+			ft_kill(server.pid, SIGUSR1);
+			server.flag = 1;
+			server.len -= bit;
 		}
 		else {
-			if (kill(server.si_pid, SIGUSR2) == -1) {
-				server.flag = 0;
-				ft_putstr("error: failed requist send SIGUSR2", 1);
-			}
-			else {
-				//ft_putstr("confirm requist SIGUSR2", 1);
-				ft_putchar('0');
-				server.flag = 2;
-			}
+			ft_kill(server.pid, SIGUSR2);
+			server.flag = 2;
 		}
 		if (server.flag) {
+			pause();
 			bit /= 2;
 		}
 		else {
 			len++;
 		}
-	//	pause();
+		if (!len) {
+			ft_putstr("line hase ben send successefly", server.flag);
+			init_signal_pid();
+			exit(EXIT_SUCCESS);
+		}
 	}
 }
 
-// 24 line
-void	handling_args(int argc, char **argv) {
+void	signal_handler(int signum, siginfo_t *info, void *context) {
+	(void)context;
+	if (server.flag && info->si_pid == (int)server.pid && signum == SIGUSR1) {
+		server.flag = 1;
+	}
+	else if (server.flag && info->si_pid == (int)server.pid && signum == SIGUSR2) {
+		server.flag = 2;
+	}
+	else {
+		server.flag = 0;
+	}
+}
+
+// 23 line
+void	check_args(int argc, char **argv) {
 	if (argc == 3) {
-		server.si_pid = ft_atoi(argv[1]);
-		if (server.si_pid < 2 || !*argv[2]) {
+		server.pid = ft_atoi(argv[1]);
+		if (server.pid < 2 || !*argv[2]) {
 			if (!*argv[2]) {
-				ft_putstr("error: empty message", 1);
+				ft_putstr("error: Empty message", 1);
 			}
-			if (server.si_pid < 2) {
-				ft_putstr("error: pid error", 1);
+			if (server.pid < 2) {
+				ft_putstr("error: Invalid process ID", 1);
 			}
 			exit (EXIT_FAILURE);
 		}
 		else {
+			ft_putstr("Client pid", getpid());
+			ft_putstr("Server pid", server.pid);
 			server.len = ft_strlen(argv[2]);
 			server.message = argv[2];
-			ft_putstr("Server pid", server.si_pid);
-			ft_putstr("Client pid", getpid());
 		}
 	}
 	else {
-		ft_putstr("error: number of arguments", 1);
+		ft_putstr("error: Invalid number of arguments", 1);
 		exit (EXIT_FAILURE);
 	}
 }
 
-void	configure_received_signal(void) {
+void	signal_configuration(void) {
 	struct sigaction	sa;
 
-	sa.sa_sigaction = &handler_signal;
+	sa.sa_sigaction = &signal_handler;
 	sa.sa_flags = SA_SIGINFO;
 	if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-		ft_putstr("error: in catching SIGUSR1", 1);
+		ft_putstr("error: sigaction()=Failed to change the action from SIGUSR1", 1);
 		exit(EXIT_FAILURE);
 	}
 	if (sigaction(SIGUSR2, &sa, NULL) == -1) {
-		ft_putstr("error: in catching SIGUSR2", 1);
+		ft_putstr("error: sigaction()=Failed to change the action from SIGUSR2", 1);
 		exit(EXIT_FAILURE);
 	}
 }
 
 int	main(int argc, char **argv) {
-	handling_args(argc, argv);
-	configure_received_signal();
+	
+	check_args(argc, argv);
+	signal_configuration();
 //
-	printf("si_pid = %d\n", server.si_pid);
-	printf("len = %d\n", server.len);
-	printf("message = %s\n", server.message);
-	printf("*************\n");
+	ft_putstr("server pid = ", server.pid);
+	ft_putstr("len of message = ", server.len);
+	ft_putstr("*************", 1);
 	send_len_of_message();
 	//send_message();	
 	/*

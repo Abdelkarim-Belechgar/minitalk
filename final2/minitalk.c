@@ -1,5 +1,4 @@
 #include "minitalk.h"
-#include <stdio.h>
 
 void	ft_putchar(char c) {
 	write(1, &c, 1);
@@ -40,6 +39,7 @@ unsigned int	ft_strlen(char *str) {
 	return (len);
 }
 
+
 unsigned int	ft_atoi(char *str) {
 	unsigned int	result;
 	unsigned int	sign;
@@ -61,8 +61,10 @@ unsigned int	ft_atoi(char *str) {
 	}
 	return (sign * result);
 }
-/*
-int	main(void) {
-	ft_putstr("hello", 20);
-	return (EXIT_SUCCESS);
-}*/
+
+void	ft_kill(unsigned int pid, int signum) {
+	if (kill(pid, signum) == -1) {
+		ft_putstr("error:  process ID is not a valid", 1);
+		exit(EXIT_FAILURE);
+	}
+}
