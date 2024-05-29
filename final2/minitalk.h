@@ -6,6 +6,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+typedef struct	info {
+	int	len;
+	int	pid;
+	int	flag;
+	int	error;
+	char	*message;
+}		si_info;
+
 typedef struct	info_signal {
 	unsigned int	pid;
 	unsigned int	len;
@@ -20,7 +28,7 @@ void		ft_putstr(char *str, unsigned int nbr);
 unsigned int	ft_strlen(char *str);
 unsigned int	ft_atoi(char *str);
 void		ft_kill(unsigned int pid, int signum);
-
+void		send_one_bit(unsigned int pid, bool bit);
 // client.c
 
 // server.c

@@ -4,16 +4,14 @@ void	ft_putchar(char c) {
 	write(1, &c, 1);
 }
 
-void	ft_putnbr(unsigned int nbr) {
+void	ft_putnbr(int nbr) {
 	if (nbr > 9) {
 		ft_putnbr(nbr / 10);
 	}
-	nbr %= 10;
-	nbr += 48;
-	ft_putchar(nbr);
+	ft_putchar("0123456789"[nbr % 10]);
 }
 
-void	ft_putstr(char *str, unsigned int nbr) {
+void	ft_putstr(char *str, int nbr) {
 	while (*str) {
 		ft_putchar(*str);
 		str++;
@@ -27,8 +25,8 @@ void	ft_putstr(char *str, unsigned int nbr) {
 	}
 }
 
-unsigned int	ft_strlen(char *str) {
-	unsigned int	len;
+int	ft_strlen(char *str) {
+	int	len;
 
 	len = 0;
 	if (str) {
@@ -39,10 +37,9 @@ unsigned int	ft_strlen(char *str) {
 	return (len);
 }
 
-
-unsigned int	ft_atoi(char *str) {
-	unsigned int	result;
-	unsigned int	sign;
+int	ft_atoi(char *str) {
+	int	result;
+	int	sign;
 
 	sign = 1;
 	result = 0;
@@ -59,21 +56,26 @@ unsigned int	ft_atoi(char *str) {
 		result = result * 10 + *str - 48;
 		str++;
 	}
+	if (*str) {
+		return (0);
+	}
 	return (sign * result);
 }
 
-void	ft_kill(unsigned int pid, int signum) {
+void	ft_kill(int pid, int signum) {
 	if (kill(pid, signum) == -1) {
 		ft_putstr("error:  process ID is not a valid", 1);
 		exit(EXIT_FAILURE);
 	}
 }
 
-void	send_one_bit(unsigned int pid, bool bit) {	
+void	send_one_bit(int pid, bool bit) {	
 	if (bit) {
+		ft_putstr("ft_kill send SIGUSR1", SIGUSR1);
 		ft_kill(pid, SIGUSR1);
 	}
 	else {
+		ft_putstr("ft_kill send SIGUSR2", SIGUSR2);
 		ft_kill(pid, SIGUSR2);
 	}
 }
