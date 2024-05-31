@@ -11,7 +11,7 @@ void	save_message(int signum, info_signal *client) {
 	static int		len;
 
 	ft_putstr("send message", 1);
-	//z++;
+	z++;
 	if (signum == SIGUSR1) {
 		c = (z << 1 | 1);
 	ft_putstr("SIGUSR1", 1);
@@ -24,7 +24,7 @@ void	save_message(int signum, info_signal *client) {
 		c = 0;
 		z = 0;
 	}
-	z++;
+	//z++;
 	ft_kill(client->pid, SIGUSR1);
 }
 
@@ -74,10 +74,10 @@ void	signal_handler(int signum, siginfo_t *info, void *context) {
 		client.flag = 0;
 //		client->message = (char*)malloc(sizeof(char) * (client.size + 1)); // allocate the size of 
 	}
-*/	else if (client.flag >= 33 && client.flag <= ((client.size * 8) + 32)) {
+*/	if (client.flag >= 32 && client.flag <= ((client.size * 8) + 33)) {
 		
 		ft_putstr("client.message.size", client.size);
-		if (client.flag == 33) {
+		if (client.flag == 32) {
 			client.message = (char*)malloc(sizeof(char) * (client.size + 1)); // allocate the size of 
 			client.message[client.size] = 0;;
 			if (!client.flag) {

@@ -74,7 +74,7 @@ void	signal_handler(int signum, siginfo_t *info, void *context) {
 		client.flag = 0;
 //		client->message = (char*)malloc(sizeof(char) * (client.size + 1)); // allocate the size of 
 	}
-*/	else if (client.flag >= 33 && client.flag <= ((client.size * 8) + 32)) {
+*/	else if (client.flag >= 33 && client.flag <= ((client.size * 8) + 33)) {
 		
 		ft_putstr("client.message.size", client.size);
 		if (client.flag == 33) {
