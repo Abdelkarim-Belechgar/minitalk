@@ -4,14 +4,14 @@ void	ft_putchar(char c) {
 	write(1, &c, 1);
 }
 
-void	ft_putnbr(int nbr) {
+void	ft_putnbr(unsigned int nbr) {
 	if (nbr > 9) {
 		ft_putnbr(nbr / 10);
 	}
 	ft_putchar("0123456789"[nbr % 10]);
 }
 
-void	ft_putstr(char *str, int nbr) {
+void	ft_putstr(char *str, unsigned int nbr) {
 	while (*str) {
 		ft_putchar(*str);
 		str++;
@@ -25,8 +25,8 @@ void	ft_putstr(char *str, int nbr) {
 	}
 }
 
-int	ft_strlen(char *str) {
-	int	len;
+unsigned int	ft_strlen(char *str) {
+	unsigned int	len;
 
 	len = 0;
 	if (str) {
@@ -39,27 +39,25 @@ int	ft_strlen(char *str) {
 
 int	ft_atoi(char *str) {
 	int	result;
-	int	sign;
 
-	sign = 1;
 	result = 0;
-	while (*str && (*str == ' ' || *str == '\t'))
-		str++;
-	if (*str == '-' || *str == '+')
-	{
-		if (*str == '-')
-			sign *= -1;
+	while (*str && (*str == ' ' || *str == '\t')) {
 		str++;
 	}
-	while (*str && *str >= '0' && *str <= '9')
-	{
+	if (*str == '-') {
+		return (0);
+	}
+	if(*str == '+') {
+		str++;
+	}
+	while (*str && *str >= '0' && *str <= '9') {
 		result = result * 10 + *str - 48;
 		str++;
 	}
 	if (*str) {
 		return (0);
 	}
-	return (sign * result);
+	return (result);
 }
 
 void	ft_kill(int pid, int signum) {
@@ -69,13 +67,11 @@ void	ft_kill(int pid, int signum) {
 	}
 }
 
-void	send_one_bit(int pid, bool bit) {	
+void	send_one_bit(int pid, bool bit) {
 	if (bit) {
-//		ft_putstr("ft_kill send SIGUSR1", SIGUSR1);
 		ft_kill(pid, SIGUSR1);
 	}
 	else {
-//		ft_putstr("ft_kill send SIGUSR2", SIGUSR2);
 		ft_kill(pid, SIGUSR2);
 	}
 }

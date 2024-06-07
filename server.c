@@ -1,65 +1,155 @@
-// server.c
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
+#include "minitalk.h"
 
-// Handler for SIGUSR1
-void handle_sigusr1(int sig) {
-    printf("Server received SIGUSR1\n");
+//-------------------------------------------------------
+//	typedef struct	t_signal {
+//		int		pid;
+//		int		new_pid;
+//		unsigned int	size;
+//		unsigned int	new_size;
+//		unsigned int	flag;
+//		unsigned int	new_flag;
+//		unsigned int	error;
+//	} 		info_signal;
+//------------------------------------------------------
+void	initialize_struct(info_signal *client) {
+	client->pid = 0;
+	client->new_pid = 0;
+	client->size = 0;
+	client->new_size = 0;
+	client->flag = 0;
+	client->new_flag = 0;
+	client->error = 0;
+	client->message = 0;
+	client->bit = 0;
 }
 
-// Handler for SIGUSR2
-void handle_sigusr2(int sig) {
-    printf("Server received SIGUSR2\n");
-}
-
-int main() {
-	int	z = 100;
-    // Set up the SIGUSR1 handler
-	while (z--) {
-	if (signal(SIGUSR1, handle_sigusr1) == SIG_ERR) {
-        perror("Cannot handle SIGUSR1");
-        exit(EXIT_FAILURE);
-    }
-
-    // Set up the SIGUSR2 handler
-    if (signal(SIGUSR2, handle_sigusr2) == SIG_ERR) {
-        perror("Cannot handle SIGUSR2");
-        exit(EXIT_FAILURE);
-    }
+void	receive_message(info_signal *client, int signum) {
+	if (signum == SIGUSR1) {
+		client->message |= (1 << (7 - client->bit));
 	}
-    printf("Server is running with PID: %d\n", getpid());
-
-    // Loop indefinitely to keep the server running
-    while (1) {
-        pause(); // Wait for signals
-    }
-
-    return 0;
+	client->bit++;
+	if (client->bit == 8) {
+		ft_putchar(client->message);
+		client->bit = 0;
+		client->message = 0;
+	}
 }
 
+void	receive_size_of_message(info_signal *client, int signum, bool bit) {
+	if (bit && signum == SIGUSR1) {
+		client->size |= (1 << (32 - client->flag));
 
-/*#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-
-// Signal handler function
-void handle_sigint(int sig) {
-    printf("Caught signal %d\n", sig);
+	}
+	else if (!bit && signum == SIGUSR1) {
+		client->new_size |= (1 << (32 - client->new_flag));
+	}
 }
 
-int main() {
-    // Set up the signal handler
-    signal(SIGINT, handle_sigint);
+void	check_processID(info_signal *client, int pid, int signum) {
+	static unsigned int	tmp_flag;
+	static unsigned int	tmp_size;
+	int		tmp_pid;
 
-    // Infinite loop to keep the program running
-    while (1) {
-        printf("Running...\n");
-        sleep(1);
-    }
-
-    return 0;
+	if (client->pid == pid) {
+		client->flag++;
+		client->error = 0;
+	}
+	else if (!client->pid && signum == SIGUSR1) {
+		client->pid = pid;
+	}
+	else if (client->new_pid == pid) {
+		client->new_flag++;
+		client->error++;
+		if (client->new_flag == 32) {
+			ft_putstr("\n\nwe have new cominecation with \n", 1);
+			if (client->flag >= (tmp_flag + 2)) {
+				send_one_bit(client->pid, false);
+			}
+			tmp_size = client->new_size;
+			tmp_pid = client->new_pid;
+			initialize_struct(client);
+			client->pid = tmp_pid;
+			client->size = tmp_size;
+			client->flag = 32;
+		}
+	}
+	else {
+		client->error++;
+		client->new_flag = 0;
+		tmp_flag = client->flag;
+		client->new_pid = pid;
+	}
+	/*
+	else if (client->new_pid == pid) {
+		ft_putstr("**** 4 flag *****", 1);
+		client->new_flag++;
+		ft_putstr("client->flag", client->flag);
+		if (client->new_flag == 32) {
+			if (client->error + 2 <= client->flag) {
+				send_one_bit(client->pid, false);
+			}
+			ft_putstr("**** 5 flag *****", 1);
+			client->pid = client->new_pid;
+			client->new_pid = 0;
+			client->flag = 32;
+			client->new_flag = 0;
+			client->size = client->new_size;
+			client->new_size = 0;
+			client->message = 0;
+			client->bit = 0;
+		}
+	}
+	else if (!client->new_pid && signum == SIGUSR1) {
+		ft_putstr("**** 6 flag *****", 1);
+		client->new_pid = pid;
+		client->error = client->flag;
+		send_one_bit(client->new_pid, true);
+	}*/
 }
-*/
+
+void	signal_handler(int signum, siginfo_t *info, void *conetxt) {
+	static info_signal	client;
+
+	(void)conetxt;
+	check_processID(&client, info->si_pid, signum);
+	if (!client.error) {
+		if (client.flag <= 32) {
+			if (client.flag) {
+				receive_size_of_message(&client, signum, true);
+			}
+			send_one_bit(client.pid, true);
+		}
+		else if (client.flag > 32) {
+			receive_message(&client, signum);
+		}
+		if (client.flag == (32 + (client.size * 8))) {
+			ft_putstr("\nmessage message has ben received successefuly from client PID", client.pid);
+			initialize_struct(&client);
+		}
+	}
+	else {
+		if (client.new_flag <= 32) {
+			ft_putstr("old flag ", client.flag);
+			ft_putstr("new flag ", client.new_flag);
+			if (client.new_flag) {
+				receive_size_of_message(&client, signum, false);
+			}
+			send_one_bit(client.new_pid, true);
+		}
+	}
+}
+
+int	main(void) {
+	struct sigaction	sa;
+
+	ft_putstr("server process ID", getpid());
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &signal_handler;
+	if (sigaction(SIGUSR1, &sa, NULL) == -1 || sigaction(SIGUSR2, &sa, NULL)) {
+		ft_putstr("error: sigaction()=Failed to change the action", 1);
+		exit(EXIT_FAILURE);
+	}
+	while (1) {
+		pause();
+	}
+}
