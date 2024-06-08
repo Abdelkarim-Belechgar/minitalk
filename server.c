@@ -24,6 +24,9 @@ void	initialize_struct(info_signal *client) {
 }
 
 void	receive_message(info_signal *client, int signum) {
+	if (client->flag == 33) {
+		ft_putchar('\n');
+	}
 	if (signum == SIGUSR1) {
 		client->message |= (1 << (7 - client->bit));
 	}
@@ -49,6 +52,7 @@ void	check_processID(info_signal *client, int pid, int signum) {
 	static unsigned int	tmp_flag;
 	static unsigned int	tmp_size;
 	int		tmp_pid;
+	
 
 	if (client->pid == pid) {
 		client->flag++;
@@ -56,21 +60,23 @@ void	check_processID(info_signal *client, int pid, int signum) {
 	}
 	else if (!client->pid && signum == SIGUSR1) {
 		client->pid = pid;
+		tmp_flag = client->flag;
 	}
 	else if (client->new_pid == pid) {
 		client->new_flag++;
 		client->error++;
-		if (client->new_flag == 32) {
-			ft_putstr("\n\nwe have new cominecation with \n", 1);
-			if (client->flag >= (tmp_flag + 2)) {
-				send_one_bit(client->pid, false);
+		if (client->flag > tmp_flag || client->new_flag == 32) {
+			if (client->flag > tmp_flag) {
+				ft_kill(client->pid, SIGUSR2);
+			}
+			else {
+				client->flag = 32;
 			}
 			tmp_size = client->new_size;
 			tmp_pid = client->new_pid;
 			initialize_struct(client);
 			client->pid = tmp_pid;
 			client->size = tmp_size;
-			client->flag = 32;
 		}
 	}
 	else {
@@ -79,32 +85,6 @@ void	check_processID(info_signal *client, int pid, int signum) {
 		tmp_flag = client->flag;
 		client->new_pid = pid;
 	}
-	/*
-	else if (client->new_pid == pid) {
-		ft_putstr("**** 4 flag *****", 1);
-		client->new_flag++;
-		ft_putstr("client->flag", client->flag);
-		if (client->new_flag == 32) {
-			if (client->error + 2 <= client->flag) {
-				send_one_bit(client->pid, false);
-			}
-			ft_putstr("**** 5 flag *****", 1);
-			client->pid = client->new_pid;
-			client->new_pid = 0;
-			client->flag = 32;
-			client->new_flag = 0;
-			client->size = client->new_size;
-			client->new_size = 0;
-			client->message = 0;
-			client->bit = 0;
-		}
-	}
-	else if (!client->new_pid && signum == SIGUSR1) {
-		ft_putstr("**** 6 flag *****", 1);
-		client->new_pid = pid;
-		client->error = client->flag;
-		send_one_bit(client->new_pid, true);
-	}*/
 }
 
 void	signal_handler(int signum, siginfo_t *info, void *conetxt) {
@@ -123,14 +103,12 @@ void	signal_handler(int signum, siginfo_t *info, void *conetxt) {
 			receive_message(&client, signum);
 		}
 		if (client.flag == (32 + (client.size * 8))) {
-			ft_putstr("\nmessage message has ben received successefuly from client PID", client.pid);
+			ft_putstr("\nmessage message has ben received successefuly from client PID", client.size);
 			initialize_struct(&client);
 		}
 	}
 	else {
 		if (client.new_flag <= 32) {
-			ft_putstr("old flag ", client.flag);
-			ft_putstr("new flag ", client.new_flag);
 			if (client.new_flag) {
 				receive_size_of_message(&client, signum, false);
 			}
