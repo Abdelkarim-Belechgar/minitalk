@@ -9,9 +9,10 @@
 typedef struct s_signal
 {
 	int				pid;
+	int				old_pid;
 	size_t			size;
 	size_t			flag;
-	int				bit;
+	int			bit;
 	unsigned char	message;
 }		t_signal;
 
@@ -23,8 +24,8 @@ size_t	ft_strlen(char *str);
 int		ft_atoi(char *str);
 
 // minital.c
-void	initalize_struct_for_new_pid(int *tmp, int pid, t_signal *client);
-size_t	check_process_id(int signum, int pid, t_signal *client);
+void	initalize_struct_for_new_pid(int pid, t_signal *client);
+int		check_process_id(int signum, int pid, t_signal *client);
 size_t	handle_arguments(int argc, char **argv, int *pid);
 void	ft_kill(int pid, int signum, bool flag);
 void	send_one_bit(int pid, bool bit, bool flag);

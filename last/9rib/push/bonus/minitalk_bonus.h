@@ -1,5 +1,5 @@
-#ifndef MINITALK_H
-# define MINITALK_H
+#ifndef MINITALK_BONUS_H
+# define MINITALK_BONUS_H
 
 # include <unistd.h>
 # include <signal.h>
@@ -9,9 +9,10 @@
 typedef struct s_signal
 {
 	int				pid;
+	int				old_pid;
 	size_t			size;
 	size_t			flag;
-	int				bit;
+	size_t			bit;
 	unsigned char	message;
 }		t_signal;
 
@@ -23,21 +24,21 @@ size_t	ft_strlen(char *str);
 int		ft_atoi(char *str);
 
 // minital.c
-void	initalize_struct_for_new_pid(int *tmp, int pid, t_signal *client);
+void	initalize_struct(int pid, t_signal *client, bool flag);
 size_t	check_process_id(int signum, int pid, t_signal *client);
 size_t	handle_arguments(int argc, char **argv, int *pid);
 void	ft_kill(int pid, int signum, bool flag);
-void	send_one_bit(int pid, bool bit, bool flag);
+void	send_one_bit(int pid, int bit, bool flag);
 
 // client.c
 //	void	signal_handler(int signum);
-void	send_one_byte(int pid, unsigned char message);
-void	send_message(int pid, unsigned char *message);
-void	send_size_off_message(int pid, size_t message_size);
+//void	send_one_byte(int pid, char message);
+//void	send_message(int pid, char *message);
+//void	send_size_off_message(int pid, size_t message_size);
 
 // server.c
 //	void	signal_handler(int signum, siginfo_t *info, void *context);
-void	receive_message(int signum, t_signal *client);
-void	receive_size_of_message(int signum, t_signal *client);
-void	signal_configuration(void);
+//void	receive_message(int signum, t_signal *client);
+//void	receive_size_of_message(int signum, t_signal *client);
+//void	signal_configuration(void);
 #endif

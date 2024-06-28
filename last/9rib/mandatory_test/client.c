@@ -1,23 +1,15 @@
 #include "minitalk.h"
 
-static size_t	g_flag;
-
 void	signal_handler(int signum)
 {
-	if (signum == SIGUSR1)
+	if (signum == SIGUSR2)
 	{
-		g_flag++;
-		if (g_flag == 1)
-			ft_putstr("confirmation SIGUSR1", 1);
-	}
-	else if (signum == SIGUSR2)
-	{
-		ft_putstr("\nSIGUSR2", g_flag);
-		g_flag = 0;
+		ft_putstr("process hase ben blaked", 1);
+		exit(EXIT_FAILURE);
 	}
 }
 
-void	send_one_byte(int pid, unsigned char message)
+void	send_one_byte(int pid, char message)
 {
 	unsigned char	decimal;
 	size_t			z;
@@ -27,11 +19,6 @@ void	send_one_byte(int pid, unsigned char message)
 	decimal = 128;
 	while (z--)
 	{
-		if (!g_flag)
-		{
-			ft_putstr("error:  These processes have been killed by the server!", 1);
-			exit(EXIT_FAILURE);
-		}
 		if (message >= decimal)
 		{
 			message -= decimal;
@@ -41,11 +28,11 @@ void	send_one_byte(int pid, unsigned char message)
 			bit = 0;
 		decimal /= 2;
 		send_one_bit(pid, bit, 1);
-		pause();
+		usleep(200);
 	}
 }
 
-void	send_message(int pid, unsigned char *message)
+void	send_message(int pid, char *message)
 {
 	while (*message)
 	{
@@ -57,16 +44,13 @@ void	send_message(int pid, unsigned char *message)
 void	send_size_off_message(int pid, size_t message_size)
 {
 	size_t	decimal;
+	size_t	flag;
 	bool	bit;
 
+	flag = 32;
 	decimal = 2147483648;
-	while (g_flag && 32 >= g_flag)
+	while (flag--)
 	{
-		if (!g_flag)
-		{
-			ft_putstr("error:  These processes have been killed by the server!", 1);
-			exit(EXIT_FAILURE);
-		}
 		if (message_size >= decimal)
 		{
 			message_size -= decimal;
@@ -76,8 +60,32 @@ void	send_size_off_message(int pid, size_t message_size)
 			bit = 0;
 		decimal /= 2;
 		send_one_bit(pid, bit, 1);
-		pause();
+		usleep(200);
 	}
+}
+
+size_t	handle_arguments(int argc, char **argv, int *pid)
+{
+	size_t	size;
+
+	if (argc != 3)
+	{
+		ft_putstr("Error:  Number of arguments not valid", 1);
+		exit (EXIT_FAILURE);
+	}
+	*pid = ft_atoi(argv[1]);
+	if (*pid < 2 || !*argv[2])
+	{
+		if (!*argv[2])
+			ft_putstr("Error:  Empty message", 1);
+		if (*pid < 2)
+			ft_putstr("Error:  Process ID is not a valid", 1);
+		exit(EXIT_FAILURE);
+	}
+	send_one_bit(*pid, 1, 1);
+	usleep(50);
+	size = ft_strlen(argv[2]);
+	return (size);
 }
 
 int	main(int argc, char **argv)
@@ -85,11 +93,10 @@ int	main(int argc, char **argv)
 	size_t	message_size;
 	int		pid;
 
-	signal(SIGUSR1, signal_handler);
+	ft_putstr("client.pid", getpid());
 	signal(SIGUSR2, signal_handler);
 	message_size = handle_arguments(argc, argv, &pid);
 	send_size_off_message(pid, message_size);
-	send_message(pid, (unsigned char *)argv[2]);
-	ft_putstr("message has been sent successfully", 1);
+	send_message(pid, argv[2]);
 	return (EXIT_SUCCESS);
 }

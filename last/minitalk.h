@@ -10,7 +10,6 @@ typedef struct	s_signal {
 	int		pid;
 	size_t	size;
 	size_t	flag;
-	size_t	error;
 	int		bit;
 	unsigned char	message;
 }		t_signal;

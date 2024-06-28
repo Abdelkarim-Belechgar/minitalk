@@ -1,19 +1,13 @@
-#include "minitalk.h"
-
-static size_t	g_flag;
+#include "minitalk_bonus.h"
 
 void	signal_handler(int signum)
 {
 	if (signum == SIGUSR1)
-	{
-		g_flag++;
-		if (g_flag == 1)
-			ft_putstr("confirmation SIGUSR1", 1);
-	}
+		exit(EXIT_FAILURE);
 	else if (signum == SIGUSR2)
 	{
-		ft_putstr("\nSIGUSR2", g_flag);
-		g_flag = 0;
+		ft_putstr("message has ben send successfuly", 1);
+		exit(EXIT_SUCCESS);
 	}
 }
 
@@ -27,11 +21,6 @@ void	send_one_byte(int pid, unsigned char message)
 	decimal = 128;
 	while (z--)
 	{
-		if (!g_flag)
-		{
-			ft_putstr("error:  These processes have been killed by the server!", 1);
-			exit(EXIT_FAILURE);
-		}
 		if (message >= decimal)
 		{
 			message -= decimal;
@@ -41,7 +30,7 @@ void	send_one_byte(int pid, unsigned char message)
 			bit = 0;
 		decimal /= 2;
 		send_one_bit(pid, bit, 1);
-		pause();
+		usleep(200);
 	}
 }
 
@@ -52,21 +41,19 @@ void	send_message(int pid, unsigned char *message)
 		send_one_byte(pid, *message);
 		message++;
 	}
+	pause();
 }
 
 void	send_size_off_message(int pid, size_t message_size)
 {
 	size_t	decimal;
+	size_t	flag;
 	bool	bit;
 
+	flag = 32;
 	decimal = 2147483648;
-	while (g_flag && 32 >= g_flag)
+	while (flag--)
 	{
-		if (!g_flag)
-		{
-			ft_putstr("error:  These processes have been killed by the server!", 1);
-			exit(EXIT_FAILURE);
-		}
 		if (message_size >= decimal)
 		{
 			message_size -= decimal;
@@ -76,7 +63,7 @@ void	send_size_off_message(int pid, size_t message_size)
 			bit = 0;
 		decimal /= 2;
 		send_one_bit(pid, bit, 1);
-		pause();
+		usleep(200);
 	}
 }
 
@@ -90,6 +77,5 @@ int	main(int argc, char **argv)
 	message_size = handle_arguments(argc, argv, &pid);
 	send_size_off_message(pid, message_size);
 	send_message(pid, (unsigned char *)argv[2]);
-	ft_putstr("message has been sent successfully", 1);
 	return (EXIT_SUCCESS);
 }

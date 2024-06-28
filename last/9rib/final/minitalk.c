@@ -12,8 +12,6 @@ void	initalize_struct_for_new_pid(int *tmp, int pid, t_signal *client)
 		client->flag = 0;
 		client->bit = 0;
 		client->message = 0;
-		if (*tmp)
-			send_one_bit(*tmp, 0, 0);
 	}
 }
 
@@ -23,21 +21,10 @@ size_t	check_process_id(int signum, int pid, t_signal *client)
 
 	if (signum == SIGUSR1 || signum == SIGUSR2)
 	{
-		if (client->pid == pid)
-			client->flag++;
-		else if (client->pid != pid && pid)
-		{
-			ft_putstr("\n**** inital ****", tmp);
-			ft_putnbr(pid);
+		if (client->pid != pid)
 			initalize_struct_for_new_pid(&tmp, pid, client);
-		}
-		else
-		{
-			ft_putstr("\n\n*** error ***\n", 1);
-			ft_putstr("pid ", pid);
-			ft_putstr("client->pid", client->pid);
-			ft_putstr("client->flag", client->flag);
-		}
+		else if (client->pid == pid)
+			client->flag++;
 		if (client->flag == 33)
 			ft_putchar('\n');
 		if (client->flag > 32)
@@ -66,7 +53,6 @@ size_t	handle_arguments(int argc, char **argv, int *pid)
 	}
 	ft_kill(*pid, SIGUSR1, 1);
 	pause();
-	usleep(100);
 	size = ft_strlen(argv[2]);
 	return (size);
 }

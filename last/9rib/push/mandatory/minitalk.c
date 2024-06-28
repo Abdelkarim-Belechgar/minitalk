@@ -1,43 +1,28 @@
 #include "minitalk.h"
 
-void	initalize_struct_for_new_pid(int *tmp, int pid, t_signal *client)
+void	initalize_struct(int pid, t_signal *client, bool flag)
 {
-	if (client->flag)
-		*tmp = 0;
-	if (!*tmp && pid)
-	{
-		*tmp = client->pid;
-		client->pid = pid;
-		client->size = 0;
-		client->flag = 0;
-		client->bit = 0;
-		client->message = 0;
-		if (*tmp)
-			send_one_bit(*tmp, 0, 0);
-	}
+	if (!client->old_pid)
+		client->old_pid = client->pid;
+	client->pid = pid;
+	client->size = 0;
+	client->flag = 0;
+	client->bit = 0;
+	client->message = 0;
+	if (flag)
+		client->old_pid = 0;
 }
 
 size_t	check_process_id(int signum, int pid, t_signal *client)
 {
-	static int	tmp;
-
 	if (signum == SIGUSR1 || signum == SIGUSR2)
 	{
 		if (client->pid == pid)
 			client->flag++;
-		else if (client->pid != pid && pid)
-		{
-			ft_putstr("\n**** inital ****", tmp);
-			ft_putnbr(pid);
-			initalize_struct_for_new_pid(&tmp, pid, client);
-		}
-		else
-		{
-			ft_putstr("\n\n*** error ***\n", 1);
-			ft_putstr("pid ", pid);
-			ft_putstr("client->pid", client->pid);
-			ft_putstr("client->flag", client->flag);
-		}
+		else if (!client->pid)
+			client->pid = pid;
+		else if (client->pid != pid && client->flag)
+			initalize_struct(pid, client, 0);
 		if (client->flag == 33)
 			ft_putchar('\n');
 		if (client->flag > 32)
@@ -62,11 +47,10 @@ size_t	handle_arguments(int argc, char **argv, int *pid)
 			ft_putstr("Error:  Empty message", 1);
 		if (*pid < 2)
 			ft_putstr("Error:  Process ID is not a valid", 1);
-		exit (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
-	ft_kill(*pid, SIGUSR1, 1);
-	pause();
-	usleep(100);
+	send_one_bit(*pid, 1, 1);
+	usleep(50);
 	size = ft_strlen(argv[2]);
 	return (size);
 }
@@ -77,15 +61,13 @@ void	ft_kill(int pid, int signum, bool flag)
 	{
 		if (flag)
 		{
-			ft_putstr("Error:  Process ID does not exist", 1);
+			ft_putstr("Error:  Process ID does not exist", pid);
 			exit(EXIT_FAILURE);
 		}
-		else
-			ft_putchar('\n');
 	}
 }
 
-void	send_one_bit(int pid, bool bit, bool flag)
+void	send_one_bit(int pid, int bit, bool flag)
 {
 	if (bit)
 		ft_kill(pid, SIGUSR1, flag);

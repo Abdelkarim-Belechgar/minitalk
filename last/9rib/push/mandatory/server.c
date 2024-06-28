@@ -3,30 +3,23 @@
 void	signal_handler(int signum, siginfo_t *info, void *context)
 {
 	static t_signal	client;
+	sigset_t		set;
 
 	(void)context;
-	usleep(50);
-	if (info->si_pid != client.pid)
+	sigemptyset(&set);
+	if (info->si_pid)
 	{
-		ft_putstr("\n*** new pid ***\n", 1);
-		ft_putstr("info->si_pid", info->si_pid);
-		ft_putstr("client.pid", client.pid);
-		ft_putstr("client.flag", client.flag);
-	}
-	if (check_process_id(signum, info->si_pid, &client))
-		receive_message(signum, &client);
-	else
-	{
-		ft_putstr("pid", info->si_pid);
-		if (!info->si_pid)
-			ft_putchar('\n');
-		ft_putstr("client.pid", client.pid);
-		if (!client.pid)
-			ft_putchar('\n');
-		ft_putstr("client.flag", client.flag);
-		if (!client.flag)
-			ft_putchar('\n');
-		receive_size_of_message(signum, &client);
+		if (check_process_id(signum, info->si_pid, &client))
+			receive_message(signum, &client);
+		else if (client.flag)
+			receive_size_of_message(signum, &client);
+		else
+			sigaddset(&set, signum);
+		if (client.old_pid)
+		{
+			send_one_bit(client.old_pid, 1, 0);
+			client.old_pid = 0;
+		}
 	}
 }
 
@@ -42,20 +35,17 @@ void	receive_message(int signum, t_signal *client)
 		client->bit = 0;
 		client->size--;
 		if (!client->size)
-			send_one_bit(client->pid, 0, 0);
+			initalize_struct(0, client, 1);
 	}
-	if (client->pid)
-		send_one_bit(client->pid, 1, 0);
 }
 
 void	receive_size_of_message(int signum, t_signal *client)
 {
-	if (client->flag && (signum == SIGUSR1 || signum == SIGUSR2))
+	if (signum == SIGUSR1 || signum == SIGUSR2)
 	{
 		if (signum == SIGUSR1)
 			client->size |= (1 << (32 - client->flag));
 	}
-		send_one_bit(client->pid, 1, 0);
 }
 
 void	signal_configuration(void)
@@ -67,12 +57,12 @@ void	signal_configuration(void)
 	sa.sa_sigaction = &signal_handler;
 	if (sigaction(SIGUSR1, &sa, NULL) == -1)
 	{
-		ft_putstr("Error: Sigaction()=Failed to change the action from SIGUSR1", 1);
+		ft_putstr("Error: Sigaction() Failed to change the action", 1);
 		exit(EXIT_FAILURE);
 	}
 	if (sigaction(SIGUSR2, &sa, NULL) == -1)
 	{
-		ft_putstr("Error: Sigaction()=Failed to change the action from SIGUSR2", 1);
+		ft_putstr("Error: Sigaction() Failed to change the action", 1);
 		exit(EXIT_FAILURE);
 	}
 }

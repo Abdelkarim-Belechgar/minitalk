@@ -5,14 +5,7 @@ void	signal_handler(int signum, siginfo_t *info, void *context)
 	static t_signal	client;
 
 	(void)context;
-	usleep(50);
-	if (info->si_pid != client.pid)
-	{
-		ft_putstr("\n*** new pid ***\n", 1);
-		ft_putstr("info->si_pid", info->si_pid);
-		ft_putstr("client.pid", client.pid);
-		ft_putstr("client.flag", client.flag);
-	}
+	usleep(25);
 	if (check_process_id(signum, info->si_pid, &client))
 		receive_message(signum, &client);
 	else
@@ -44,8 +37,7 @@ void	receive_message(int signum, t_signal *client)
 		if (!client->size)
 			send_one_bit(client->pid, 0, 0);
 	}
-	if (client->pid)
-		send_one_bit(client->pid, 1, 0);
+	send_one_bit(client->pid, 1, 0);
 }
 
 void	receive_size_of_message(int signum, t_signal *client)
@@ -55,6 +47,7 @@ void	receive_size_of_message(int signum, t_signal *client)
 		if (signum == SIGUSR1)
 			client->size |= (1 << (32 - client->flag));
 	}
+	if (client->pid)
 		send_one_bit(client->pid, 1, 0);
 }
 

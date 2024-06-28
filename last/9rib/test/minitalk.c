@@ -1,45 +1,37 @@
 #include "minitalk.h"
 
-void	initalize_struct_for_new_pid(int *tmp, int pid, t_signal *client)
+void	initalize_struct_for_new_pid(int pid, t_signal *client)
 {
-	if (client->flag)
-		*tmp = 0;
-	if (!*tmp && pid)
-	{
-		*tmp = client->pid;
-		client->pid = pid;
-		client->size = 0;
-		client->flag = 0;
+	ft_putstr("initalize", client->pid);
+	client->size = 0;
+	client->flag = 0;
+	client->message = 0;
+	if (!client->old_pid)
+		client->old_pid = client->pid;
+	client->pid = pid;
+	if (client->old_pid)
 		client->bit = 0;
-		client->message = 0;
-		if (*tmp)
-			send_one_bit(*tmp, 0, 0);
-	}
+	else
+		client->bit = 1;
 }
 
-size_t	check_process_id(int signum, int pid, t_signal *client)
+int	check_process_id(int signum, int pid, t_signal *client)
 {
-	static int	tmp;
-
 	if (signum == SIGUSR1 || signum == SIGUSR2)
 	{
+		ft_putstr("client->flag", client->flag);
 		if (client->pid == pid)
-			client->flag++;
-		else if (client->pid != pid && pid)
 		{
-			ft_putstr("\n**** inital ****", tmp);
-			ft_putnbr(pid);
-			initalize_struct_for_new_pid(&tmp, pid, client);
+			client->flag++;
+			client->bit = 1;
 		}
 		else
-		{
-			ft_putstr("\n\n*** error ***\n", 1);
-			ft_putstr("pid ", pid);
-			ft_putstr("client->pid", client->pid);
-			ft_putstr("client->flag", client->flag);
-		}
+			initalize_struct_for_new_pid(pid, client);
 		if (client->flag == 33)
+		{
+			client->old_pid = 0;
 			ft_putchar('\n');
+		}
 		if (client->flag > 32)
 			return (1);
 	}
@@ -66,7 +58,6 @@ size_t	handle_arguments(int argc, char **argv, int *pid)
 	}
 	ft_kill(*pid, SIGUSR1, 1);
 	pause();
-	usleep(100);
 	size = ft_strlen(argv[2]);
 	return (size);
 }
