@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: abelechg <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/29 16:08:17 by abelechg          #+#    #+#             */
-/*   Updated: 2024/06/29 16:08:19 by abelechg         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../minitalk/minitalk.h"
 
 void	receive_message(int signum, t_signal *client)
@@ -24,7 +12,10 @@ void	receive_message(int signum, t_signal *client)
 		client->bit = 0;
 		client->size--;
 		if (!client->size)
+		{
+			send_one_bit(client->pid, 0, 0);
 			initalize_struct(0, client, 1);
+		}
 	}
 }
 

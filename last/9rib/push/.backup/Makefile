@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: abelechg <marvin@42.fr>                    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/06/29 16:07:18 by abelechg          #+#    #+#              #
-#    Updated: 2024/06/29 16:07:27 by abelechg         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 RM = rm -rf
@@ -25,7 +13,7 @@ CLIENT_OBJS = $(CLIENT_FILE:.c=.o)
 SERVER_BONUS_FILE = ./bonus/server_bonus.c
 SERVER_BONUS_OBJS = $(SERVER_BONUS_FILE:.c=.o)
 CLIENT_BONUS_FILE = ./bonus/client_bonus.c
-CLIENT_BONUS_OBJS = $(CLIENT_BONUS_FILE:.c=.o)
+CLIENT_BONUS_OBJS = $(CLIENT_BONUS_FILE:.c=.c)
 
 SERVER = server
 CLIENT = client
